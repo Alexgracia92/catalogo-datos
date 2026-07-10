@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mi Catálogo</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .producto { border: 1px solid #ccc; padding: 10px; border-radius: 8px; text-align: center; }
+        .producto img { width: 100%; height: 200px; object-fit: cover; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+<div id="catalogo">Cargando productos...</div>
+
+<script>
+    fetch('productos.json')
+        .then(response => response.json())
+        .then(data => {
+            const contenedor = document.getElementById('catalogo');
+            contenedor.innerHTML = '';
+            data.forEach(p => {
+                contenedor.innerHTML += `
+                    <div class="producto">
+                        <img src="${p.url_imagen}" alt="${p.nombre}">
+                        <h3>${p.nombre}</h3>
+                        <p>$${p.precio}</p>
+                    </div>
+                `;
+            });
+        });
+</script>
+</body>
+</html
