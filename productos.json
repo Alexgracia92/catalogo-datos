@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1,
+    "nombre": "Producto Ejemplo 1",
+    "precio": "15.50",
+    "descripcion": "Descripción del primer producto",
+    "url_imagen": "https://raw.githubusercontent.com/TU_USUARIO/TU_REPOSITORIO/main/imagenes/foto1.jpg"
+  },
+  {
+    "id": 2,
+    "nombre": "Producto Ejemplo 2",
+    "precio": "25.00",
+    "descripcion": "Descripción del segundo producto",
+    "url_imagen": "https://raw.githubusercontent.com/TU_USUARIO/TU_REPOSITORIO/main/imagenes/foto2.jpg"
+  }
+]
