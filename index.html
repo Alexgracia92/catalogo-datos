@@ -3,11 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Título de la pestaña del navegador -->
     <title>GC EXPRESS GYE - Catálogo de Productos</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        /* Aquí ya está aplicada la corrección para que la imagen no se corte */
         .card-img-top { height: 200px; object-fit: contain; padding: 10px; }
         #carrito-flotante { position: fixed; bottom: 20px; right: 20px; z-index: 1000; }
     </style>
@@ -17,7 +15,21 @@
 <div class="container my-5">
     <!-- Título principal y subtítulo -->
     <h1 class="text-center fw-bold mb-1">GC EXPRESS</h1>
-    <h4 class="text-center text-secondary mb-4">Catálogo de productos</h4>
+    <h4 class="text-center text-secondary mb-3">Catálogo de productos</h4>
+    
+    <!-- Descripción del catálogo -->
+    <p class="text-center text-muted mb-4 px-md-5">
+        Descubre nuestra selección exclusiva de fragancias, lociones y sets de edición limitada.<br>
+        Encuentra tu aroma favorito y llévate la experiencia de lujo directamente a tu hogar.<br>
+        <strong>¡Tu próxima fragancia te está esperando!</strong>
+    </p>
+
+    <!-- Botón de TikTok -->
+    <div class="text-center mb-5">
+        <a href="https://www.tiktok.com/@julygcexpress?_r=1&_t=ZS-97xfGtWP6Gt" target="_blank" class="btn btn-dark btn-sm shadow-sm">
+            🎵 Síguenos en TikTok
+        </a>
+    </div>
     
     <div id="catalogo" class="row row-cols-2 row-cols-md-3 g-3"></div>
 </div>
@@ -31,6 +43,11 @@
     let productos = [];
     let carrito = [];
 
+    // Mensaje de bienvenida al abrir el catálogo
+    window.onload = function() {
+        alert("¡Bienvenido al catálogo en línea de GC EXPRESS!");
+    };
+
     fetch('productos.json')
         .then(res => res.json())
         .then(data => {
@@ -42,11 +59,11 @@
         const contenedor = document.getElementById('catalogo');
         contenedor.innerHTML = lista.map(p => `
             <div class="col">
-                <div class="card h-100">
+                <div class="card h-100 shadow-sm border-0">
                     <img src="${p.url_imagen}" class="card-img-top" alt="${p.nombre}">
-                    <div class="card-body p-2">
-                        <h6 class="card-title">${p.nombre}</h6>
-                        <p class="fw-bold">$${p.precio}</p>
+                    <div class="card-body p-2 text-center">
+                        <h6 class="card-title text-truncate">${p.nombre}</h6>
+                        <p class="fw-bold text-success mb-2">$${p.precio}</p>
                         <button class="btn btn-sm btn-outline-success w-100" onclick="agregarAlCarrito(${p.id})">Agregar</button>
                     </div>
                 </div>
@@ -63,7 +80,17 @@
     function verCarrito() {
         if(carrito.length === 0) return alert("Tu carrito está vacío");
         
-        let mensaje = "Hola, quiero pedir estos productos:%0A";
+        // Preguntar el nombre del cliente
+        let nombreCliente = prompt("Por favor, ingresa tu nombre para tu pedido:");
+        
+        // Validar por si el cliente deja en blanco o le da a cancelar
+        if (nombreCliente === null || nombreCliente.trim() === "") {
+            nombreCliente = "un cliente"; 
+        }
+        
+        // Armar el mensaje incluyendo el nombre
+        let mensaje = "Hola GC EXPRESS, soy " + nombreCliente + " y quiero pedir estos productos:%0A";
+        
         carrito.forEach(p => mensaje += "- " + p.nombre + " ($" + p.precio + ")%0A");
         
         const urlWhatsApp = "https://wa.me/593988937308?text=" + mensaje;
