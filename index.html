@@ -61,7 +61,7 @@
         let mensaje = "Hola, quiero pedir estos productos:%0A";
         carrito.forEach(p => mensaje += "- " + p.nombre + " ($" + p.precio + ")%0A");
         
-        const urlWhatsApp = "https://wa.me/593988937308" + mensaje;
+        const urlWhatsApp = "https://wa.me/593988937308?text=" + mensaje;
         window.open(urlWhatsApp, '_blank');
     }
 </script>
