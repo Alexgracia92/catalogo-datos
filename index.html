@@ -6,7 +6,17 @@
     <title>GC EXPRESS GYE - Catálogo de Productos</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        .card-img-top { height: 200px; object-fit: contain; padding: 10px; }
+        /* Efecto para indicar que la imagen es interactiva/clicable */
+        .card-img-top { 
+            height: 200px; 
+            object-fit: contain; 
+            padding: 10px; 
+            cursor: pointer; 
+            transition: transform 0.2s ease-in-out;
+        }
+        .card-img-top:hover {
+            transform: scale(1.05); /* Zoom sutil al pasar el mouse */
+        }
         #carrito-flotante { position: fixed; bottom: 20px; right: 20px; z-index: 1000; }
         /* Nueva mejora visual para productos agotados */
         .producto-agotado { opacity: 0.6; }
@@ -19,7 +29,7 @@
     <h4 class="text-center text-secondary mb-3">Catálogo de productos</h4>
     
     <p class="text-center text-muted mb-4 px-md-5">
-        Descubre nuestra selection exclusiva de fragancias, lociones y sets de edición limitada.<br>
+        Descubre nuestra selección exclusiva de fragancias, lociones y sets de edición limitada.<br>
         Encuentra tu aroma favorito y llévate la experiencia de lujo directamente a tu hogar.<br>
         <strong>¡Tu próxima fragancia te está esperando!</strong>
     </p>
@@ -37,9 +47,40 @@
     <button class="btn btn-primary btn-lg shadow" onclick="verCarrito()">🛒 Ver Pedido</button>
 </div>
 
+<div class="modal fade" id="modalProducto" tabindex="-1" aria-labelledby="modalProductoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pt-0">
+                <div class="row align-items-center">
+                    <div class="col-md-5 text-center mb-3 mb-md-0">
+                        <img id="modal-img" src="" class="img-fluid rounded" alt="Imagen de producto" style="max-height: 280px; object-fit: contain;">
+                    </div>
+                    <div class="col-md-7">
+                        <span id="modal-categoria" class="badge bg-secondary mb-2 text-uppercase">Categoría</span>
+                        <h3 id="modal-nombre" class="fw-bold mb-1">Nombre del Producto</h3>
+                        <p id="modal-precio" class="fs-4 fw-bold text-success mb-3">$0.00</p>
+                        
+                        <div id="modal-detalles-adicionales">
+                            </div>
+
+                        <div class="d-grid gap-2 mt-4" id="modal-contenedor-boton">
+                            </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
     let productos = [];
     let carrito = [];
+    let bsModal; // Variable para controlar el modal de Bootstrap
 
     // Mensaje de bienvenida al abrir el catálogo
     window.onload = function() {
@@ -56,15 +97,14 @@
     function mostrarProductos(lista) {
         const contenedor = document.getElementById('catalogo');
         contenedor.innerHTML = lista.map(p => {
-            // Evaluar si el producto está disponible (si no está definido, asumimos true)
             const esDisponible = p.disponible !== false;
             
             return `
             <div class="col">
                 <div class="card h-100 shadow-sm border-0 ${!esDisponible ? 'producto-agotado' : ''}">
-                    <img src="${p.url_imagen}" class="card-img-top" alt="${p.nombre}">
+                    <img src="${p.url_imagen}" class="card-img-top" alt="${p.nombre}" onclick="abrirModal(${p.id})">
                     <div class="card-body p-2 text-center">
-                        <h6 class="card-title text-truncate">${p.nombre}</h6>
+                        <h6 class="card-title text-truncate" style="cursor: pointer;" onclick="abrirModal(${p.id})">${p.nombre}</h6>
                         <p class="fw-bold text-success mb-2">$${p.precio}</p>
                         ${esDisponible 
                             ? `<button class="btn btn-sm btn-outline-success w-100" onclick="agregarAlCarrito(${p.id})">Agregar</button>` 
@@ -75,6 +115,68 @@
             </div>
             `;
         }).join('');
+    }
+
+    // Nueva función para abrir el modal con la información del producto
+    function abrirModal(id) {
+        const p = productos.find(prod => prod.id === id);
+        if (!p) return;
+
+        // Rellenar datos básicos
+        document.getElementById('modal-img').src = p.url_imagen;
+        document.getElementById('modal-img').alt = p.nombre;
+        document.getElementById('modal-nombre').innerText = p.nombre;
+        document.getElementById('modal-categoria').innerText = p.categoria || "Fragancia";
+        document.getElementById('modal-precio').innerText = `$${p.precio}`;
+
+        // Construir dinámicamente detalles (descripción o acordes)
+        const contenedorDetalles = document.getElementById('modal-detalles-adicionales');
+        contenedorDetalles.innerHTML = '';
+
+        if (p.descripcion) {
+            contenedorDetalles.innerHTML += `<p class="text-muted small">${p.descripcion}</p>`;
+        }
+
+        // Si tienes acordes olfativos en tu JSON, se dibujarán automáticamente aquí
+        if (p.acordes && p.acordes.length > 0) {
+            contenedorDetalles.innerHTML += `<h6 class="fw-bold mt-2">Acordes Olfativos:</h6>`;
+            p.acordes.forEach(acorde => {
+                contenedorDetalles.innerHTML += `
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span>${acorde.nombre.toUpperCase()}</span>
+                            <span>${acorde.ancho || '80%'}</span>
+                        </div>
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar bg-warning" role="progressbar" style="width: ${acorde.ancho || '80%'}"></div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // Controlar dinámicamente el botón de compra dentro del modal
+        const esDisponible = p.disponible !== false;
+        const contenedorBoton = document.getElementById('modal-contenedor-boton');
+        if (esDisponible) {
+            contenedorBoton.innerHTML = `<button class="btn btn-success btn-lg" onclick="agregarDesdeModal(${p.id})">🛒 Agregar al Pedido</button>`;
+        } else {
+            contenedorBoton.innerHTML = `<button class="btn btn-secondary btn-lg" disabled>Agotado</button>`;
+        }
+
+        // Inicializar y mostrar el Modal de Bootstrap
+        if (!bsModal) {
+            bsModal = new bootstrap.Modal(document.getElementById('modalProducto'));
+        }
+        bsModal.show();
+    }
+
+    // Permite agregar al carrito desde adentro de la ventana modal y cerrarla automáticamente
+    function agregarDesdeModal(id) {
+        agregarAlCarrito(id);
+        if (bsModal) {
+            bsModal.hide();
+        }
     }
 
     function agregarAlCarrito(id) {
