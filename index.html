@@ -20,6 +20,14 @@
         #carrito-flotante { position: fixed; bottom: 20px; right: 20px; z-index: 1000; }
         /* Nueva mejora visual para productos agotados */
         .producto-agotado { opacity: 0.6; }
+        
+        /* Ajuste estético para los botones de categorías */
+        .filter-btn {
+            border-radius: 20px;
+            padding: 6px 16px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body class="bg-light">
@@ -34,12 +42,43 @@
         <strong>¡Tu próxima fragancia te está esperando!</strong>
     </p>
 
-    <div class="text-center mb-5">
-        <a href="https://www.tiktok.com/@julygcexpress?_r=1&_t=ZS-97xfGtWP6Gt" target="_blank" class="btn btn-dark btn-sm shadow-sm">
+    <div class="text-center mb-4">
+        <a href="https://www.tiktok.com/@julygcexpress?_r=1&_t=ZS-97xfGtWP6Gt" target="_blank" class="btn btn-dark btn-sm shadow-sm mb-3">
             🎵 Síguenos en TikTok
         </a>
     </div>
+
+    <!-- ============================================ -->
+    <!-- BARRA DE BÚSQUEDA POR NOMBRE -->
+    <!-- ============================================ -->
+    <div class="row mb-4 justify-content-center">
+        <div class="col-md-6 col-10">
+            <div class="input-group shadow-sm">
+                <span class="input-group-text bg-white border-end-0">🔍</span>
+                <input type="text" id="buscador" class="form-control border-start-0" placeholder="Buscar fragancia, loción, set..." onkeyup="buscarProducto()">
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- SECCIÓN DE FILTROS POR CATEGORÍA -->
+    <!-- ============================================ -->
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <div class="d-flex flex-wrap justify-content-center gap-2">
+                <button class="btn btn-dark btn-sm filter-btn active" onclick="filtrarCategoria('todos', this)">Todos</button>
+                <button class="btn btn-outline-dark btn-sm filter-btn" onclick="filtrarCategoria('pink', this)">Pink</button>
+                <button class="btn btn-outline-dark btn-sm filter-btn" onclick="filtrarCategoria('mist', this)">Fragrance Mist</button>
+                <button class="btn btn-outline-dark btn-sm filter-btn" onclick="filtrarCategoria('locion', this)">Fragrance Lotion</button>
+                <button class="btn btn-outline-dark btn-sm filter-btn" onclick="filtrarCategoria('perfume', this)">Perfumes</button>
+                <button class="btn btn-outline-dark btn-sm filter-btn" onclick="filtrarCategoria('exfoliante', this)">Exfoliantes</button>
+                <button class="btn btn-outline-dark btn-sm filter-btn" onclick="filtrarCategoria('wash', this)">Body Wash</button>
+                <button class="btn btn-outline-dark btn-sm filter-btn" onclick="filtrarCategoria('set', this)">Sets</button>
+            </div>
+        </div>
+    </div>
     
+    <!-- Contenedor del catálogo -->
     <div id="catalogo" class="row row-cols-2 row-cols-md-3 g-3"></div>
 </div>
 
@@ -47,6 +86,9 @@
     <button class="btn btn-primary btn-lg shadow" onclick="verCarrito()">🛒 Ver Pedido</button>
 </div>
 
+<!-- ============================================ -->
+<!-- VENTANA MODAL (DETALLES DEL PRODUCTO) -->
+<!-- ============================================ -->
 <div class="modal fade" id="modalProducto" tabindex="-1" aria-labelledby="modalProductoLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 shadow">
@@ -55,19 +97,24 @@
             </div>
             <div class="modal-body pt-0">
                 <div class="row align-items-center">
+                    <!-- Imagen en el modal -->
                     <div class="col-md-5 text-center mb-3 mb-md-0">
                         <img id="modal-img" src="" class="img-fluid rounded" alt="Imagen de producto" style="max-height: 280px; object-fit: contain;">
                     </div>
+                    <!-- Información en el modal -->
                     <div class="col-md-7">
                         <span id="modal-categoria" class="badge bg-secondary mb-2 text-uppercase">Categoría</span>
                         <h3 id="modal-nombre" class="fw-bold mb-1">Nombre del Producto</h3>
                         <p id="modal-precio" class="fs-4 fw-bold text-success mb-3">$0.00</p>
                         
                         <div id="modal-detalles-adicionales">
-                            </div>
+                            <!-- Aquí se cargará la descripción o los acordes olfativos dinámicamente -->
+                        </div>
 
+                        <!-- Botón para agregar directamente desde la ventana flotante -->
                         <div class="d-grid gap-2 mt-4" id="modal-contenedor-boton">
-                            </div>
+                            <!-- Botón dinámico -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -75,12 +122,14 @@
     </div>
 </div>
 
+<!-- Scripts de Bootstrap (Necesarios para el funcionamiento de los modales) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
     let productos = [];
     let carrito = [];
-    let bsModal; // Variable para controlar el modal de Bootstrap
+    let bsModal; 
+    let categoriaActiva = 'todos'; // Variable global para rastrear la categoría seleccionada
 
     // Mensaje de bienvenida al abrir el catálogo
     window.onload = function() {
@@ -102,6 +151,7 @@
             return `
             <div class="col">
                 <div class="card h-100 shadow-sm border-0 ${!esDisponible ? 'producto-agotado' : ''}">
+                    <!-- Al hacer clic en la imagen, se abre el modal -->
                     <img src="${p.url_imagen}" class="card-img-top" alt="${p.nombre}" onclick="abrirModal(${p.id})">
                     <div class="card-body p-2 text-center">
                         <h6 class="card-title text-truncate" style="cursor: pointer;" onclick="abrirModal(${p.id})">${p.nombre}</h6>
@@ -117,12 +167,74 @@
         }).join('');
     }
 
-    // Nueva función para abrir el modal con la información del producto
+    // Normaliza el texto removiendo tildes, mayúsculas y espacios extras
+    function normalizarTexto(texto) {
+        if (!texto) return '';
+        return texto.toString().toLowerCase()
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "") 
+                    .trim();
+    }
+
+    // =================================================================
+    // LÓGICA DE FILTRADO COMBINADO (Buscador + Botones de Categorías)
+    // =================================================================
+    function aplicarFiltros() {
+        const textoBusqueda = normalizarTexto(document.getElementById('buscador').value);
+        
+        let filtrados = productos;
+        
+        // 1. Filtrar primero por categoría si hay una seleccionada
+        if (categoriaActiva !== 'todos') {
+            filtrados = filtrados.filter(p => {
+                if (!p.categoria) return false;
+                const catProducto = normalizarTexto(p.categoria);
+                const catFiltro = normalizarTexto(categoriaActiva);
+                return catProducto.includes(catFiltro) || catFiltro.includes(catProducto);
+            });
+        }
+        
+        // 2. Filtrar después por la búsqueda escrita en la barra
+        if (textoBusqueda !== '') {
+            filtrados = filtrados.filter(p => {
+                const nombreProducto = normalizarTexto(p.nombre);
+                return nombreProducto.includes(textoBusqueda);
+            });
+        }
+        
+        mostrarProductos(filtrados);
+    }
+
+    // Gatillo del botón de categoría
+    function filtrarCategoria(categoria, boton) {
+        categoriaActiva = categoria;
+
+        // Estilos visuales activos/inactivos para los botones de categorías
+        const botones = document.querySelectorAll('.filter-btn');
+        botones.forEach(btn => {
+            btn.classList.remove('active', 'btn-dark');
+            btn.classList.add('btn-outline-dark');
+        });
+        
+        boton.classList.remove('btn-outline-dark');
+        boton.classList.add('active', 'btn-dark');
+
+        aplicarFiltros();
+    }
+
+    // Gatillo del buscador por teclado
+    function buscarProducto() {
+        aplicarFiltros();
+    }
+
+    // ============================================
+    // APERTURA Y CONTROL DEL MODAL
+    // ============================================
     function abrirModal(id) {
         const p = productos.find(prod => prod.id === id);
         if (!p) return;
 
-        // Rellenar datos básicos
+        // Rellenar datos básicos en el modal
         document.getElementById('modal-img').src = p.url_imagen;
         document.getElementById('modal-img').alt = p.nombre;
         document.getElementById('modal-nombre').innerText = p.nombre;
@@ -137,7 +249,6 @@
             contenedorDetalles.innerHTML += `<p class="text-muted small">${p.descripcion}</p>`;
         }
 
-        // Si tienes acordes olfativos en tu JSON, se dibujarán automáticamente aquí
         if (p.acordes && p.acordes.length > 0) {
             contenedorDetalles.innerHTML += `<h6 class="fw-bold mt-2">Acordes Olfativos:</h6>`;
             p.acordes.forEach(acorde => {
@@ -155,7 +266,6 @@
             });
         }
 
-        // Controlar dinámicamente el botón de compra dentro del modal
         const esDisponible = p.disponible !== false;
         const contenedorBoton = document.getElementById('modal-contenedor-boton');
         if (esDisponible) {
@@ -164,14 +274,12 @@
             contenedorBoton.innerHTML = `<button class="btn btn-secondary btn-lg" disabled>Agotado</button>`;
         }
 
-        // Inicializar y mostrar el Modal de Bootstrap
         if (!bsModal) {
             bsModal = new bootstrap.Modal(document.getElementById('modalProducto'));
         }
         bsModal.show();
     }
 
-    // Permite agregar al carrito desde adentro de la ventana modal y cerrarla automáticamente
     function agregarDesdeModal(id) {
         agregarAlCarrito(id);
         if (bsModal) {
@@ -188,15 +296,12 @@
     function verCarrito() {
         if(carrito.length === 0) return alert("Tu carrito está vacío");
         
-        // Preguntar el nombre del cliente
         let nombreCliente = prompt("Por favor, ingresa tu nombre para tu pedido:");
         
-        // Validar por si el cliente deja en blanco o le da a cancelar
         if (nombreCliente === null || nombreCliente.trim() === "") {
             nombreCliente = "un cliente"; 
         }
         
-        // Armar el mensaje incluyendo el nombre
         let mensaje = "Hola GC EXPRESS, soy " + nombreCliente + " y quiero pedir estos productos:%0A";
         
         carrito.forEach(p => mensaje += "- " + p.nombre + " ($" + p.precio + ")%0A");
